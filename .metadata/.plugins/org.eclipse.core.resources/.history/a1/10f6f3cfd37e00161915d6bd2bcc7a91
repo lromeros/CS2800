@@ -153,7 +153,6 @@ the following directive (do not remove it!):
 |#
 
 :program
-#|ACL2s-ToDo-Line|#
 #|
 
 Notes:
@@ -174,71 +173,31 @@ your function is supposed to do. That is what your own tests are for.
 |#
 
 #|
-;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;  Part I: Sets, subsets and lists.
-;  This following section deals with functions involving lists in general.
-;  Some functions you write may be useful in subsequent functions.
-;  In all cases, you can define your own helper functions if that simplifies
-;  your coding
-;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; |#
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Part I: Sets, subsets and lists.
+ This following section deals with functions involving lists in general.
+ Some functions you write may be useful in subsequent functions.
+ In all cases, you can define your own helper functions if that simplifies
+ your coding
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ------------------------------------------------------------------------
-; aip-comparator: Any x List --> Boolean
-; 
-; (aip-comparator comp l) returns t if all elements in this list are the 
-; same as the comparator variable passed in by all-identp
-; ------------------------------------------------------------------------
-(defunc aip-comparator (comp l)
-    :input-contract (and t (listp l))
-    :output-contract (booleanp (aip-comparator comp l))
-    (if (endp (first l))
-        (or (equal nil (first l))
-            (equal comp (first l)))
-        (if (equal comp (first l))
-            (aip-comparator (first l) (rest l))
-            nil)
-    )
-)
-
-(check= (aip-comparator '(1) '('(1) '(1) '(1)))  t)
-(check= (aip-comparator '(1) '('(1) '(2) '(1)))  t)
-(check= (aip-comparator '(2) '('(1) '(1) '(1)))  t)
-(check= (aip-comparator 1 '('(1) '(1) '(1)))  nil)
-(check= (aip-comparator '(1) '(1 1 1)) nil)
-(check= (aip-comparator '(1) '()  t)
-(check= (aip-comparator '(1) nil  t))
-(check= (aip-comparator '(1) '(1 nil)  nil))
-(check= (aip-comparator '(1) '('(1) nil)  t))
-
-
-
-
+;
 ; Define
 ; all-identp: List -> Boolean
 ;
 ; (all-identp l) returns t if all elements in l are the same and nil otherwise.
 ; A helper function can be used but it is not strictly necessary.
 
-
 (defunc all-identp (l)
   :input-contract (listp l)
   :output-contract (booleanp (all-identp l))
-  (if (equal l nil)
-      t
-      (aip-comparator (first l) (rest l))
-  )
-)
-          
+  ...)
   
 (check= (all-identp '(1))   t)
 (check= (all-identp '(1 a)) nil)
-(check= (all-identp '()) t)
-(check= (all-identp '('(1) '(1) '(1))) t)
-(check= (all-identp '('(1) '(1) '(2))) t)
-(check= (all-identp '('(nil) '(1) '(1))) t)
-#|
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
 ; sublist-start: List x Nat -> List
@@ -562,4 +521,4 @@ did in CS 1800. You will also set the precision of a rational number
 
 ;; Now let's check our set-precision method in a better format. 
 ;; Add at least 2 more tests.
-(check= (rational-to-dec (set-precision -1/3 -4)) '("-" 0 333300)) ; 0.3333|#
+(check= (rational-to-dec (set-precision -1/3 -4)) '("-" 0 333300)) ; 0.3333
