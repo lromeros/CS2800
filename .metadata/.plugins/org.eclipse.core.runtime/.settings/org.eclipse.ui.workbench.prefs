@@ -1,0 +1,10 @@
+ColorsAndFontsPreferencePage.expandedCategories=Tacl2s.plugin.themeElementCategory
+ColorsAndFontsPreferencePage.selectedElement=Cacl2s.plugin.color.output
+eclipse.preferences.version=1
+org.eclipse.ui.r30.acl2s.plugin.color.output=118,162,26
+org.eclipse.ui.r30.acl2s.plugin.color.outputerr=169,0,1
+org.eclipse.ui.r30.acl2s.plugin.color.prompt=63,96,187
+org.eclipse.ui.r30.acl2s.plugin.color.tokens.num=136,116,211
+org.eclipse.ui.r30.acl2s.plugin.color.tokens.space=168,160,164
+org.eclipse.ui.r30.acl2s.plugin.color.tokens.string=217,139,59
+org.eclipse.ui.r30.acl2s.plugin.color.tokens.sym=21,196,218
