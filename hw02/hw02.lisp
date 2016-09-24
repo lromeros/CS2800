@@ -73,12 +73,12 @@ This homework is done in groups. The rules are:
    format. If you fail to follow these instructions, it costs us time and
    it will cost you points, so please read carefully.
 
-The format should be: FirstName1 LastName1, FirstName2 LastName2, ...
+The format should be: Laura Romero, Khyati Singh
 For example:
 Names of ALL group members: David Sprague, Jaideep Ramachandran
 
 There will be a 10 pt penalty if your names do not follow this format.
-Names of ALL group members: Laura Romero, Khyati Singh
+Names of ALL group members: ...
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -153,7 +153,6 @@ the following directive (do not remove it!):
 |#
 
 :program
-#|ACL2s-ToDo-Line|#
 #|
 
 Notes:
@@ -174,71 +173,41 @@ your function is supposed to do. That is what your own tests are for.
 |#
 
 #|
-;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;  Part I: Sets, subsets and lists.
-;  This following section deals with functions involving lists in general.
-;  Some functions you write may be useful in subsequent functions.
-;  In all cases, you can define your own helper functions if that simplifies
-;  your coding
-;  ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; |#
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Part I: Sets, subsets and lists.
+ This following section deals with functions involving lists in general.
+ Some functions you write may be useful in subsequent functions.
+ In all cases, you can define your own helper functions if that simplifies
+ your coding
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+|#
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-; ------------------------------------------------------------------------
-; aip-comparator: Any x List --> Boolean
-; 
-; (aip-comparator comp l) returns t if all elements in this list are the 
-; same as the comparator variable passed in by all-identp
-; ------------------------------------------------------------------------
-(defunc aip-comparator (comp l)
-    :input-contract (and t (listp l))
-    :output-contract (booleanp (aip-comparator comp l))
-    (if (endp (first l))
-        (or (equal nil (first l))
-            (equal comp (first l)))
-        (if (equal comp (first l))
-            (aip-comparator (first l) (rest l))
-            nil)
-    )
-)
-
-(check= (aip-comparator '(1) '('(1) '(1) '(1)))  t)
-(check= (aip-comparator '(1) '('(1) '(2) '(1)))  t)
-(check= (aip-comparator '(2) '('(1) '(1) '(1)))  t)
-(check= (aip-comparator 1 '('(1) '(1) '(1)))  nil)
-(check= (aip-comparator '(1) '(1 1 1)) nil)
-(check= (aip-comparator '(1) '()  t)
-(check= (aip-comparator '(1) nil  t))
-(check= (aip-comparator '(1) '(1 nil)  nil))
-(check= (aip-comparator '(1) '('(1) nil)  t))
-
-
-
-
+;
 ; Define
 ; all-identp: List -> Boolean
 ;
 ; (all-identp l) returns t if all elements in l are the same and nil otherwise.
 ; A helper function can be used but it is not strictly necessary.
 
-
 (defunc all-identp (l)
   :input-contract (listp l)
   :output-contract (booleanp (all-identp l))
-  (if (equal l nil)
-      t
-      (aip-comparator (first l) (rest l))
-  )
-)
-          
+  (if (or (endp l)(endp (rest l))
+          (equal (len l) 1))
+    t
+    (if (equal (first l)(first (rest l)))
+      (all-identp (rest l))
+      nil)))
   
 (check= (all-identp '(1))   t)
 (check= (all-identp '(1 a)) nil)
 (check= (all-identp '()) t)
-(check= (all-identp '('(1) '(1) '(1))) t)
-(check= (all-identp '('(1) '(1) '(2))) t)
-(check= (all-identp '('(nil) '(1) '(1))) t)
-#|
+(check= (all-identp '(luna luna luna)) t)
+(check= (all-identp '('('(nil nil) 'x nil))) t)
+(check= (all-identp '(0 'x nil nil)) nil)
+(check= (all-identp '(t nil)) nil)
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
 ; sublist-start: List x Nat -> List
@@ -249,11 +218,18 @@ your function is supposed to do. That is what your own tests are for.
 (defunc sublist-start (l size)
   :input-contract (and (listp l)(natp size))
   :output-contract (listp (sublist-start l size))
-  ...)
+  (if (equal size 0)
+    nil
+    (if (< (len l) size)
+      l
+      (cons (first l)(sublist-start (rest l) (- size 1))))))
 
 (check= (sublist-start '(1 2 3 4) 2) '(1 2))
 (check= (sublist-start '(1 2 3 4) 0) nil)
 (check= (sublist-start '(1 2 3 4) 5) '(1 2 3 4))
+(check= (sublist-start '(0) 5) '(0))
+(check= (sublist-start '(a b c d e) 2) '(a b))
+(check= (sublist-start '('(t nil)) 0) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
@@ -264,11 +240,56 @@ your function is supposed to do. That is what your own tests are for.
 (defunc sublist (l start end)
   :input-contract (and (listp l)(natp start)(natp end))
   :output-contract (listp (sublist l start end))
-  ...)
+  (if (or (< end start) 
+          (< (len l) (- (+ 1 end) start)))
+      nil
+      (if (equal start 0)
+        (sublist-start l (- (+ 1 end) start))
+        (sublist (rest l)(- start 1)(- end 1)))))
 
 (check= (sublist '(1 2 3 4) 2 3) '(3 4))
 (check= (sublist '(1 2 3 4) 2 2) '(3))
 (check= (sublist nil 1 1) nil)
+(check= (sublist '(1 2 3) 2 1) nil)
+(check= (sublist '(1 2) 1 4) nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; max: Integer x Integer -> Integer
+;
+; returns the bigger integer of the two
+(defunc max (x y)
+  :input-contract (and (integerp x) (integerp y))
+  :output-contract (integerp (max x y))
+  (if (<= x y)
+    y
+    x))
+
+(check= (max 6 9) 9)
+(check= (max 5 5) 5)
+(check= (max 8 3) 8)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; max-ident-sublist-helper: List -> Nat
+;
+; helper for max-ident-sublist
+(defunc max-ident-sublist-helper (l)
+  :input-contract (listp l)
+  :output-contract (natp (max-ident-sublist-helper l))
+  (if (endp l)
+    0
+    (if (endp (rest l))
+      1
+      (if (equal (first l) (first (rest l)))
+        (if (< 0 (len (rest (rest l))))
+          (if (equal (first l) (first (rest (rest l))))
+            (+ 1 (max-ident-sublist-helper (rest l)))
+            2)
+          2)
+        1))))
+
+(check= (max-ident-sublist-helper nil) 0)
+(check= (max-ident-sublist-helper '(1)) 1)
+(check= (max-ident-sublist-helper '(a a)) 2)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
@@ -282,12 +303,18 @@ your function is supposed to do. That is what your own tests are for.
 (defunc max-ident-sublist (l)
   :input-contract (listp l)
   :output-contract (natp (max-ident-sublist l))
-  ...)
-
-(check= (max-ident-sublist '(1 2 3 3 3 4)) 3)
-(check= (max-ident-sublist '(a c b b c d c)) 2)
+  (if (endp l)
+    0
+    (if (endp (rest l)) 
+      1
+      (max (max-ident-sublist-helper l) (max-ident-sublist (rest l))))))
+  
+(check= (max-ident-sublist (list 3 3 4 3 3 3)) 3)
+(check= (max-ident-sublist (list 1)) 1)
+(check= (max-ident-sublist (list 2 3)) 1)
+(check= (max-ident-sublist (list 3 3 2)) 2)
+(check= (max-ident-sublist (list 3 3 3 4 3 3)) 3)
 (check= (max-ident-sublist nil) 0)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
 ; has-elementp: Any x List -> Boolean
@@ -298,11 +325,18 @@ your function is supposed to do. That is what your own tests are for.
 (defunc has-elementp (e l)
   :input-contract (listp l)
   :output-contract (booleanp (has-elementp e l))
-  ...)
+  (if (endp l)
+    nil
+    (if (equal (first l) e)
+      t
+      (has-elementp e (rest l)))))
 
 (check= (has-elementp 'a '(b c a)) t)
 (check= (has-elementp 'a '(b c d)) nil)
 (check= (has-elementp 'a '(b c (a b c))) nil)
+(check= (has-elementp 0 '(0 A)) t)
+(check= (has-elementp '() '()) nil)
+(check= (has-elementp '() '(1 2 3)) nil)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
@@ -313,10 +347,14 @@ your function is supposed to do. That is what your own tests are for.
 (defunc remove-element (e l)
   :input-contract (and (listp l)(has-elementp e l))
   :output-contract (listp (remove-element e l))
-  ...)
+  (if (equal (first l) e)
+   (rest l)
+   (cons (first l)(remove-element e (rest l)))))
 
 (check= (remove-element 'a '(b c a)) '(b c))
 (check= (remove-element 'a '(a b c a)) '(b c a))
+(check= (remove-element 8 '(1 2 a j k 8)) '(1 2 a j k))
+(check= (remove-element 1 '(45 98 1)) '(45 98))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
@@ -330,11 +368,18 @@ your function is supposed to do. That is what your own tests are for.
 (defunc permutationp (l1 l2)
   :input-contract (and (listp l1)(listp l2))
   :output-contract (booleanp (permutationp l1 l2))
-  ...)
+  (if (or (endp l1)(endp l2))
+    t
+    (if (equal (len l1) (len l2))
+      (if (has-elementp (first l1) l2)
+        (permutationp (rest l1) l2)
+        nil)
+      nil)))
 
-(check= (permutationp '(1 2) '(2 1))   t)
+(check= (permutationp nil '(1 2)) t)
+(check= (permutationp nil nil) t)
+(check= (permutationp '(1 2) nil) t)
 (check= (permutationp '(1 3) '(3 1 1)) nil)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
 ; set-intersect(l1 l2)
@@ -346,11 +391,17 @@ your function is supposed to do. That is what your own tests are for.
 (defunc set-intersect(l1 l2)
   :input-contract (and (listp l1)(listp l2))
   :output-contract (listp (set-intersect l1 l2))
-  ...)
+  (if (or (endp l1)(endp l2))
+    nil
+    (if (has-elementp (first l1) l2)
+      (cons (first l1) (set-intersect (rest l1) l2))
+      (set-intersect (rest l1) l2))))
 
 (check= (set-intersect '(a b c d e) '(a c e g i)) '(a c e))
 (check= (set-intersect '(a b c d e) nil) nil)
-
+(check= (set-intersect '() '()) nil)
+(check= (set-intersect '(8 9) '(2 9 8 5)) '(8 9))
+(check= (set-intersect '(1 5 3) '(83694 83 1)) '(1))
 #|
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 Part II: Discrete Math Fun
@@ -359,6 +410,67 @@ in the term. These help you do discrete arithmetic like you
 did in CS 1800. You will also set the precision of a rational number
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 |#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Functions provided for you to simplify your life, 
+;; moved abs up
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; abs: Rationalp -> Rationalp >= 0
+;
+; Calculates the absolute value of a rational number
+(defunc abs (r)
+  :input-contract (rationalp r)
+  :output-contract (and (rationalp (abs r))(>= (abs r) 0)) 
+  (if (< r 0)
+    (unary-- r)
+    r))
+
+(check= (abs -3/2) 3/2)
+(check= (abs 3/2) 3/2)
+(check= (abs -3456778/2) 3456778/2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define
+;; exp-pos: Integer x Integer -> Integer
+
+(defunc exp-pos (base power)
+  :input-contract (and (integerp base)
+                       (or (equal power 0)
+                           (and (posp power)
+                                (integerp power))))
+  :output-contract (integerp (exp-pos base power))
+    (if (equal 0 power)
+      1
+      (* base (exp-pos base (- power 1)))))
+
+(check= (exp-pos 10 3) 1000)
+(check= (exp-pos 10 0) 1)
+(check= (exp-pos 2 4) 16)
+(check= (exp-pos 2 0) 1)
+(check= (exp-pos -2 7) -128)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Define
+;; exp: Integer x Integer -> Rational
+
+(defunc exp (base power)
+  :input-contract (and (integerp base)(integerp power))
+  :output-contract (rationalp (exp base power))
+  (if (equal base 0)
+    0
+    (if (equal power 0)
+      1
+      (if (posp power)
+        (exp-pos base power)
+        (/ 1 (exp-pos base (abs power)))))))
+
+(check= (exp 10 3) 1000)
+(check= (exp 10 0) 1)
+(check= (exp 10 -3) 1/1000)
+(check= (exp 2 4) 16)
+(check= (exp 2 0) 1)
+(check= (exp 2 -4) 1/16)
+  
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
@@ -370,24 +482,50 @@ did in CS 1800. You will also set the precision of a rational number
 (defunc rem-similar (x y)
   :input-contract (and (natp x)(posp y))
   :output-contract (natp (rem-similar x y))
-  ...)
+  (if (< x y)
+      x
+      (if (or (equal x (exp y 2))(equal x y))
+        0
+        (rem-similar (- x y) y))))
 
+(check= (rem-similar 3 5) 3)
+(check= (rem-similar 13 4) 1)
+(check= (rem-similar 10 4) 2)
+(check= (rem-similar 4834 70) 4)
+(check= (rem-similar 489497 700) 197)
+(check= (rem-similar 700 489497) 700)
+(check= (rem-similar 399 20) 19)
+(check= (rem-similar 5 3) 2)
+(check= (rem-similar 188 63) 62)
+(check= (rem-similar 25 5) 0)
+(check= (rem-similar 1 1) 0)
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; Define
 ; rem-smally: Nat x Nat-{0} -> Nat
 ;
-; (rem-smally x y) returns the remainder of the integral division of 
+; (rem-smally x y) returns the remainder of the integer division of 
 ; x by y assuming that y is relatively small compared to x.
 ; This is a helper method for (rem x y)
 (defunc rem-smally (x y)
-  :input-contract (and (natp x)(posp y))
+  :input-contract (and(natp x)(posp y))
   :output-contract (natp (rem-smally x y))
-  ...)
+  (if (not (posp (- x (exp y 2))))
+    (rem-similar x y)
+    (if (< (- x (exp y 2)) y)
+      (- x (exp y 2))
+      (rem-smally (- x (exp y 2)) y))))
+         
+(check= (rem-smally 26 5) 1)
+(check= (rem-smally 37 6) 1)
+(check= (rem-smally 37 3) 1)
+(check= (rem-smally 38 3) 2)
+(check= (rem-smally 39 6) 3)
+(check= (rem-smally 39 1) 0)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ; rem: Nat x Nat-{0} -> Nat
 ;
-; (rem x y) returns the remainder of the integral division of x by y.
+; (rem x y) returns the remainder of the integer division of x by y.
 ; The labs should help with this definition, HOWEVER, note that for
 ; some numbers like x = 100000000 and y =11 one method is better.
 ; Thus we will make two definitions:
@@ -423,29 +561,18 @@ did in CS 1800. You will also set the precision of a rational number
 (defunc nat/ (x y)
   :input-contract (and (natp x) (posp y))
   :output-contract (natp (nat/ x y))
- ...)
+  (/ (- x (rem x y)) y))
 
 (check= (nat/ 10 2) 5)
 (check= (nat/ 11 2) 5)
+(check= (nat/ 12 10) 1)
+(check= (nat/ 0 3) 0)
+(check= (nat/ 29 1) 29)
+(check= (nat/ 10 3) 3)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Functions provided for you to simplify your life.
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;
-; abs: Rationalp -> Rationalp >= 0
-;
-; Calculates the absolute value of a rational number
-(defunc abs (r)
-  :input-contract (rationalp r)
-  :output-contract (and (rationalp (abs r))(>= (abs r) 0)) 
-  (if (< r 0)
-    (unary-- r)
-    r))
-
-(check= (abs -3/2) 3/2)
-(check= (abs 3/2) 3/2)
-(check= (abs -3456778/2) 3456778/2)
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; floor: Rational -> Integer
 ;;
@@ -482,16 +609,24 @@ did in CS 1800. You will also set the precision of a rational number
 (defunc round (r)
   :input-contract (rationalp r)
   :output-contract (integerp (round r))
-  ...)
+  (if (equal r 0)
+    0
+    (if (< (- r 1/2)(floor r))
+      (floor r)
+      (+ (floor r) 1))))
+
 (check= (round 4/3) 1)
 (check= (round 3/4) 1)
+(check= (round 178/3) 59)
+(check= (round 0) 0)
 
 ;; Given that we need to convert a rational to a "decimal" number (below),
 ;; we need a hard lower limit on the number of decimal places
 ;; otherwise numbers like 1/3 wouldn't work.  *min-lsp* stands
 ;; for minimum least significant position and effectively means
 ;; we can store up to 6 positions smaller than the decimal point.
-(defconst *min-lsp* -6)
+(defconst *min-lsp* -6)#|ACL2s-ToDo-Line|#
+
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define
@@ -511,7 +646,13 @@ did in CS 1800. You will also set the precision of a rational number
 (defunc set-precision (r dig)
   :input-contract (and (rationalp r)(integerp dig)(> dig *min-lsp*))
   :output-contract (rationalp (set-precision r dig))
-  ...)
+  (if (or (equal r 0)(and (< (/ r (exp 10 dig)) 1) (posp r)))
+    0
+    (if (< r 0)
+      (* -1 (set-precision (abs r) dig))
+      (if (< dig 0)
+        (/ (floor (* r (exp 10 (abs dig))))(exp 10 (abs dig)))
+        (- (floor r)(rem (round r) (exp 10 dig)))))))
 
 ;; Note: For the time being, you need to determine that your algorithm
 ;; works by checking against another rational number or as a list of integers 
@@ -520,7 +661,7 @@ did in CS 1800. You will also set the precision of a rational number
 (check= (set-precision 1234/100 1) 10) ; 12.34 rounding at the 10s position
 (check= (set-precision 1234/100 0) 12) ; 12.34 rounding at 1s position.
 (check= (set-precision 1234/100 -1) 123/10) ; 12.35 rounded at the 0.1s position
-(check= (set-precision -22/20 0) -1) ; -1.1 rounded at the 1s position 
+(check= (set-precision -22/20 0) -1) ; -1.1 rounded at the 1s position
 
 #|
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -540,6 +681,17 @@ did in CS 1800. You will also set the precision of a rational number
 (defconst *dec-shifter* 1000000)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; r2dhelp: Rational -> list
+;; creates the second part of the list in rational-to-dec
+
+(defunc r2dhelp (r)
+  :input-contract (and (rationalp r) (not (equal r 0)))
+  :output-contract (and (listp (rational-to-dec r))
+                        (not (endp (rational-to-dec r))))
+  (cons (floor (set-precision r *min-lsp*)) 
+          (* (- (set-precision r *min-lsp*)(floor (set-precision r *min-lsp*)))
+             *dec-shifter*)))
+
 ;; Define 
 ;; rational-to-dec (r): Rational -> List (not empty)
 ;;
@@ -556,10 +708,17 @@ did in CS 1800. You will also set the precision of a rational number
   :input-contract (rationalp r)
   :output-contract (and (listp (rational-to-dec r))
                         (not (endp (rational-to-dec r))))
-  ...)
+  (if (equal 0)
+    (cons "+" 0 000000)
+    (if (posp r)
+      (cons "+" (r2d-help r))
+      (cons "-" (r2d-hep r)))))
+
 (check= (rational-to-dec -11/3) '("-" 3 666666)) ;-3.6 repeating
 (check= (rational-to-dec 4/5) '("+" 0 800000)) ;0.8
 
 ;; Now let's check our set-precision method in a better format. 
 ;; Add at least 2 more tests.
-(check= (rational-to-dec (set-precision -1/3 -4)) '("-" 0 333300)) ; 0.3333|#
+(check= (rational-to-dec (set-precision -1/3 -4)) '("-" 0 333300)) ; 0.3333
+(check= (rational-to-dec (set-precision 1/3 -4)) '("+" 0 333300))
+(check= (rational-to-dec (set-precision 0 -4)) '("-" 0 000000))

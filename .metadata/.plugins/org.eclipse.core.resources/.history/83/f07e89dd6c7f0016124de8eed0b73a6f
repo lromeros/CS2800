@@ -1,0 +1,322 @@
+; **************** BEGIN INITIALIZATION FOR ACL2s B MODE ****************** ;
+; (Nothing to see here!  Your actual file is after this initialization code);
+
+#|
+Pete Manolios
+Fri Jan 27 09:39:00 EST 2012
+----------------------------
+
+Made changes for spring 2012.
+
+
+Pete Manolios
+Thu Jan 27 18:53:33 EST 2011
+----------------------------
+
+The Beginner level is the next level after Bare Bones level.
+
+|#
+
+; Put CCG book first in order, since it seems this results in faster loading of this mode.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading the CCG book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "ccg/ccg" :uncertified-okp nil :dir :acl2s-modes :ttags ((:ccg)) :load-compiled-file nil);v4.0 change
+
+;Common base theory for all modes.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s base theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "base-theory" :dir :acl2s-modes)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s customizations book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "custom" :dir :acl2s-modes :uncertified-okp nil :ttags :all)
+
+;Settings common to all ACL2s modes
+(acl2s-common-settings)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading trace-star and evalable-ld-printing books.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "trace-star" :uncertified-okp nil :dir :acl2s-modes :ttags ((:acl2s-interaction)) :load-compiled-file nil)
+(include-book "hacking/evalable-ld-printing" :uncertified-okp nil :dir :system :ttags ((:evalable-ld-printing)) :load-compiled-file nil)
+
+;theory for beginner mode
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s beginner theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "beginner-theory" :dir :acl2s-modes :ttags :all)
+
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem setting up ACL2s Beginner mode.") (value :invisible))
+;Settings specific to ACL2s Beginner mode.
+(acl2s-beginner-settings)
+
+; why why why why 
+(acl2::xdoc acl2s::defunc) ; almost 3 seconds
+
+(cw "~@0Beginner mode loaded.~%~@1"
+    #+acl2s-startup "${NoMoReSnIp}$~%" #-acl2s-startup ""
+    #+acl2s-startup "${SnIpMeHeRe}$~%" #-acl2s-startup "")
+
+
+(acl2::in-package "ACL2S B")
+
+; ***************** END INITIALIZATION FOR ACL2s B MODE ******************* ;
+;$ACL2s-SMode$;Beginner
+#|
+
+CS 2800 Homework 2 - Fall 2016
+
+This homework is done in groups. The rules are:
+
+ * ALL group members must submit the homework file (this file).
+ 
+ * Do not rename this file.  There will be a 10 point penalty for this.
+
+ * The file submitted must be THE SAME for all group members (we use this
+   to confirm that alleged group members agree to be members of that group)
+
+ * You must list the names of ALL group members below, using the given
+   format. If you fail to follow these instructions, it costs us time and
+   it will cost you points, so please read carefully.
+
+The format should be: Laura Romero, Khyati Singh
+For example:
+Names of ALL group members: David Sprague, Jaideep Ramachandran
+
+There will be a 10 pt penalty if your names do not follow this format.
+Names of ALL group members: ...
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+For this homework you will need to use ACL2s.
+
+Technical instructions:
+
+- open this file in ACL2s as hw02.lisp
+
+- make sure you are in BEGINNER mode. This is essential! Note that you can
+  only change the mode when the session is not running, so set the correct
+  mode before starting the session.
+
+- insert your solutions into this file where indicated (usually as "...")
+
+- only add to the file. Do not remove or comment out anything pre-existing.
+
+- make sure the entire file is accepted by ACL2s. In particular, there must
+  be no "..." left in the code. If you don't finish all problems, comment
+  the unfinished ones out. Comments should also be used for any English
+  text that you may add. This file already contains many comments, so you
+  can see what the syntax is.
+
+- when done, save your file and submit it as hw02.lisp
+
+- avoid submitting the session file (which shows your interaction with the
+  theorem prover). This is not part of your solution. Only submit the lisp
+  file.
+
+Instructions for programming problems:
+
+For each function definition, you must provide both contracts and a body.
+
+You must also ALWAYS supply your own tests. This is in addition to the
+tests sometimes provided. Make sure you produce sufficiently many new test
+cases. This means: cover at least the possible scenarios according to the
+data definitions of the involved types. For example, a function taking two
+lists should have at least 4 tests: all combinations of each list being
+empty and non-empty.
+
+Beyond that, the number of tests should reflect the difficulty of the
+function. For very simple ones, the above coverage of the data definition
+cases may be sufficient. For complex functions with numerical output, you
+want to test whether it produces the correct output on a reasonable
+number of inputs.
+
+Use good judgment. For unreasonably few test cases we will deduct points.
+
+We will use ACL2s' check= function for tests. This is a two-argument
+function that rejects two inputs that do not evaluate equal. You can think
+of check= roughly as defined like this:
+
+(defunc check= (x y)
+  :input-contract (equal x y)
+  :output-contract (equal (check= x y) t)
+  t)
+
+That is, check= only accepts two inputs with equal value. For such inputs, t
+(or "pass") is returned. For other inputs, you get an error. If any check=
+test in your file does not pass, your file will be rejected.
+
+|#
+
+#|
+
+Since this is our first programming exercise, we will simplify the
+interaction with ACL2s somewhat: instead of asking it to formally *prove*
+the various conditions for admitting a function, we will just require that
+they be *tested* on a reasonable number of inputs. This is achieved using
+the following directive (do not remove it!):
+
+|#
+
+:program
+#|
+
+Notes:
+
+1. Testing is cheaper but less powerful than proving. So, by turning off
+proving and doing only testing, it is possible that the functions we are
+defining cause runtime errors even if called on valid inputs. In the future
+we will require functions complete with admission proofs, i.e. without the
+above directive. For this first homework, the functions are simple enough
+that there is a good chance ACL2s's testing will catch any contract or
+termination errors you may have.
+
+2. The tests ACL2s runs test only the conditions for admitting the
+function. They do not test for "functional correctness", i.e. does the
+function do what it is supposed to do? ACL2s has no way of telling what
+your function is supposed to do. That is what your own tests are for.
+
+|#
+
+#|
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Part I: Sets, subsets and lists.
+ This following section deals with functions involving lists in general.
+ Some functions you write may be useful in subsequent functions.
+ In all cases, you can define your own helper functions if that simplifies
+ your coding
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+|#
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;
+; Define
+; all-identp: List -> Boolean
+;
+; (all-identp l) returns t if all elements in l are the same and nil otherwise.
+; A helper function can be used but it is not strictly necessary.
+
+(defunc all-identp (l)
+  :input-contract (listp l)
+  :output-contract (booleanp (all-identp l))
+  (if (or (endp l)(endp (rest l)))
+    t
+    (if (equal (first l)(first (rest l)))
+      (all-identp (rest l))
+      nil)))
+  
+(check= (all-identp '(1))   t)
+(check= (all-identp '(1 a)) nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; sublist-start: List x Nat -> List
+;
+; (sublist-start l size) returns the sublist of list l of length size 
+; starting with the first element. If size > the length of l,  return
+; the entire list.
+(defunc sublist-start (l size)
+  :input-contract (and (listp l)(natp size))
+  :output-contract (listp (sublist-start l size))
+  (if (equal size 0)
+    nil
+    (if (< (len l) size)
+      l
+      (cons (first l)(sublist-start (rest l) (- size 1))))))
+
+(check= (sublist-start '(1 2 3 4) 2) '(1 2))
+(check= (sublist-start '(1 2 3 4) 0) nil)
+(check= (sublist-start '(1 2 3 4) 5) '(1 2 3 4))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; sublist: List x Nat x Nat -> List
+;
+; (sublist l start end) returns the sublist of list l starting with element start
+; and ending with elment end (inclusive). If start > end then return nil.
+(defunc sublist (l start end)
+  :input-contract (and (listp l)(natp start)(natp end))
+  :output-contract (listp (sublist l start end))
+  (if (or (< end start) (< (len l) (- (+ 1 end) start)))
+    nil
+    (if (equal (len l)(- (+ 1 end) start))
+      l
+      (sublist (rest l)(- start 1)(- end 1)))))
+
+(check= (sublist '(1 2 3 4) 2 3) '(3 4))
+; (check= (sublist '(1 2 3 4) 2 2) '(3))
+; (check= (sublist nil 1 1) nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; max-ident-sublist: List -> Nat
+;
+; (max-ident-sublist l) returns the size of the largest sublist of identical
+; elements (without removing or re-arranging elements in l.
+; HINT: Note that if l does not just have the same element througout, you can 
+; calculate max-ident-sublist on two slightly smaller sublists of l to
+; find your answer. Notice the functions we've already written.
+#|(defunc max-ident-sublist (l)
+  :input-contract (listp l)
+  :output-contract (natp (max-ident-sublist l))
+  ...)
+
+(check= (max-ident-sublist '(1 2 3 3 3 4)) 3)
+(check= (max-ident-sublist '(a c b b c d c)) 2)
+(check= (max-ident-sublist nil) 0)|#
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; has-elementp: Any x List -> Boolean
+;
+; (has-elementp e l) returns true if and only if element e can be
+; found as a top level element in l (in other words you don't have
+; to recursively search lists within l).
+(defunc has-elementp (e l)
+  :input-contract (listp l)
+  :output-contract (booleanp (has-elementp e l))
+  (if (endp l)
+    nil
+    (if (equal (first l) e)
+      t
+      (has-elementp e (rest l)))))
+
+(check= (has-elementp 'a '(b c a)) t)
+(check= (has-elementp 'a '(b c d)) nil)
+(check= (has-elementp 'a '(b c (a b c))) nil)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; remove-element: Any x List -> Boolean
+;
+; (remove-element e l) returns list l with the first occurance of e removed
+; Unlike del or other functions we may define later, e must be in l to start.
+(defunc remove-element (e l)
+  :input-contract (and (listp l)(has-elementp e l))
+  :output-contract (listp (remove-element e l))
+  (if (or (equal e nil)(endp l))
+    nil
+    (if (equal (first l) e)
+      (rest l)
+      (cons (first l)(remove-element e (rest l))))))
+
+(check= (remove-element 'a '(b c a)) '(b c))
+(check= (remove-element 'a '(a b c a)) '(b c a))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Define
+; permutationp (l1 l2)
+;
+; (permutationp l1 l2) returns true iff l2 is a rearrangement of l1.  
+; Thus each element in l1 is also in l2 (even if there are duplicates) 
+; and the reverse is also true.
+; NOTE: if l1 and l2 and identical, they are still considered a permutation
+; of each other
+(defunc permutationp (l1 l2)
+  :input-contract (and (listp l1)(listp l2))
+  :output-contract (booleanp (permutationp l1 l2))
+  (if (or (endp l1)(endp l2))
+    t
+    (if (equal (len l1) (len l2))
+      (if (has-elementp (first l1) l2)
+        (permutationp (rest l1) l2)
+        nil)
+      nil)))
+
+(check= (permutationp nil '(1 2)) t)
+(check= (permutationp nil nil) t)
+(check= (permutationp '(1 2) nil) t)#|ACL2s-ToDo-Line|#
