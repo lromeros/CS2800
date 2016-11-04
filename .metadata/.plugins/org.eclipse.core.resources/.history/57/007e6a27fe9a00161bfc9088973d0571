@@ -1,0 +1,603 @@
+; **************** BEGIN INITIALIZATION FOR ACL2s B MODE ****************** ;
+; (Nothing to see here!  Your actual file is after this initialization code);
+
+#|
+Pete Manolios
+Fri Jan 27 09:39:00 EST 2012
+----------------------------
+
+Made changes for spring 2012.
+
+
+Pete Manolios
+Thu Jan 27 18:53:33 EST 2011
+----------------------------
+
+The Beginner level is the next level after Bare Bones level.
+
+|#
+
+; Put CCG book first in order, since it seems this results in faster loading of this mode.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading the CCG book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "ccg/ccg" :uncertified-okp nil :dir :acl2s-modes :ttags ((:ccg)) :load-compiled-file nil);v4.0 change
+
+;Common base theory for all modes.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s base theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "base-theory" :dir :acl2s-modes)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s customizations book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "custom" :dir :acl2s-modes :uncertified-okp nil :ttags :all)
+
+;Settings common to all ACL2s modes
+(acl2s-common-settings)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading trace-star and evalable-ld-printing books.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "trace-star" :uncertified-okp nil :dir :acl2s-modes :ttags ((:acl2s-interaction)) :load-compiled-file nil)
+(include-book "hacking/evalable-ld-printing" :uncertified-okp nil :dir :system :ttags ((:evalable-ld-printing)) :load-compiled-file nil)
+
+;theory for beginner mode
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s beginner theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "beginner-theory" :dir :acl2s-modes :ttags :all)
+
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem setting up ACL2s Beginner mode.") (value :invisible))
+;Settings specific to ACL2s Beginner mode.
+(acl2s-beginner-settings)
+
+; why why why why 
+(acl2::xdoc acl2s::defunc) ; almost 3 seconds
+
+(cw "~@0Beginner mode loaded.~%~@1"
+    #+acl2s-startup "${NoMoReSnIp}$~%" #-acl2s-startup ""
+    #+acl2s-startup "${SnIpMeHeRe}$~%" #-acl2s-startup "")
+
+
+(acl2::in-package "ACL2S B")
+
+; ***************** END INITIALIZATION FOR ACL2s B MODE ******************* ;
+;$ACL2s-SMode$;Beginner
+#|
+
+CS 2800 Homework 7 - Fall 2016
+
+This homework is done in groups. The rules are:
+
+ * ALL group members must submit the homework file (this file)
+
+ * The file submitted must be THE SAME for all group members (we
+   use this to confirm that alleged group members agree to be
+   members of that group)
+
+ * You must list the names of ALL group members below using the
+   format below. If you fail to follow instructions, that costs
+   us time and it will cost you points, so please read carefully.
+
+
+Names of ALL group members: Prashan Parvani, Laura Romero-Suarez, Khyati Singh
+
+Note: There will be a 10 pt penalty if your names do not follow 
+this format.
+
+For this homework you will NOT need to use ACL2s. However, you could
+use the Eclipse/ACL2s text editor to write up your solution.
+|#
+#|
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+; Admissible or not?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+|#
+#|
+
+
+For each of the definitions below, check whether it is admissible, i.e. it
+satisfies all rules of the definitional principle. You can assume that Rule
+1 is met: the symbol used in the defunc is a new function symbol in each
+case.
+
+If you claim admissibility, BRIEFLY
+
+1. Explain in English why the body contracts hold.
+2. Explain in English why the contract theorem holds.
+3. Suggest a measure function that can be used to show termination.
+   (You DO NOT have to prove the measure function properties in this problem.)
+
+Otherwise, identify a rule in the Definitional Principle that is violated.
+
+If you blame one of the purely syntactic rules (variable names,
+non-wellformed body etc), explain the violation in English.
+
+If you blame one of the semantic rules (body contract, contract theorem or
+termination), you must provide an input that satisfies the input contract, but
+causes a violation in the body or violates the output contract or causes
+non-termination.
+
+Remember that the rules are not independent: if you claim the function does
+not terminate, you must provide an input on which the function runs forever
+*without* causing a body contract violation: a body contract violation is
+not a counterexample to termination. Similarly, if you claim the function
+fails the contract theorem, you must provide an input on which it
+terminates and produces a value, which then violates the output contract.
+
+Your explanations should be brief but clear. We are not looking for a page of text per question but we also want to clearly see that you understand the function and if/what is wrong with it.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+1.
+
+(defunc f1 (x h)
+  :input-contract (and (listp x) (posp h))
+  :output-contract (posp (f1 x h))
+  (if (endp x)
+    0
+    (h (rest x) (+ h 1))))
+    
+Not admissible, contract theorem violation. 
+If f1 is passed in an empty list as it's first argument,
+it returns 0 which violates the output contract, e.g (f1 nil 2). 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+2.
+
+(defunc f2 (a b)
+  :input-contract  (and (posp a) (posp b))
+  :output-contract (posp (f2 a b))
+  (cond ((and (equal a 1) (equal b 1)) 1)
+        ((> a b)                       (f2 a (- b 1)))
+        (t                             (f2 b a))))
+        
+Not admissible, body contract violation.
+(f2 2 1).
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+3.
+
+(defunc f3 (x y)
+  :input-contract (and (listp x) (posp y))
+  :output-contract (listp (f3 x y))
+  (cond ((equal y 1) nil)
+        ((endp x)    (list y))
+        (t           (f3 (cons (+ y 1) x) (- y 1)))))
+        
+
+Admissible.
+
+1. Body contracts hold because in the third condition (in which f3 recurs)
+   the first argument it is passed the cons of (+ y 1) and x, which ensures 
+   it will be a list. Additionally, the second argument passed is (- y 1) 
+   where y is a positive number not equal to 1, meaning it is still positive.
+2. Contract theorem holds because given valid input, the two stopping conditions
+   (equal y 1) and (endp x) return lists, satisfying the output contract. 
+3. (defunc m-f3 (x y)
+     :input-contract (and (listp x)(posp y))
+     :output-contract (natp (m-f3 x y))
+     (+ y (len x)))  
+
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+4.
+
+(defunc f4 (x y)
+  :input-contract (and (listp x) (posp y))
+  :output-contract (listp (f4 x y))
+  (if (equal y 1)
+    nil
+    (f4 (list (first x)) (- y 1))))
+
+Not admissible, non-wellformed body. The body of the function fails to check
+whether or not x is nil before attempting to call (first x) which is not valid.
+TODO:justification name?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+5.
+
+(defunc f5 (z)
+  :input-contract (posp z)
+  :output-contract (integerp (f5 z))
+  (if (equal z 1)
+    9
+    (- 10 (f5 (- z 1) 1))))
+
+Not admissible, body contract violation.
+In the second condition, f5 is passed two arguments instead of 1, which
+violates its input contract. 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+6.
+
+(defunc f6 (l)
+  :input-contract (listp l)
+  :output-contract (listp (f6 l))
+  (if (endp l)
+    nil
+    (f6 (rest f6))))
+
+Not admissible, free instance of a variable. 
+f6 is not an established variable, so (rest f6) cannot be called. 
+
+TODO:justification name?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+7.
+
+(defunc f7 (n x n)
+  :input-contract (and (posp n) (listp x) (posp n))
+  :output-contract (posp (f7 n x n))
+  (if (endp x)
+    0
+    (f7 n (rest x) n)))
+
+Not admissible, invalid varibale names. 
+n should not be passed in as an argument  twice.    
+TODO:justification name?
+    
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+8.
+
+(defunc f8 (x)
+  :input-contract (listp x)
+  :output-contract (natp (f8 x))
+  (cond ((endp x)  0)
+        (t         (f8 (len x)))))
+        
+Not admissible, body contract violation. 
+The second condition passes f8 a natp, which violates
+its input contract. 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+9.
+
+(defunc f9 (x y)
+  :input-contract (and (listp x) (listp y))
+  :output-contract (posp (f9 x y))
+  (if (endp x)
+    0
+    (f9 (rest x) y)))
+
+Not admissible, contract theorem violation. 
+If x is nil, f9 returns 0, which is not a positive number 
+and violates the output contract. 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+10.
+
+(defunc f10 (x y)
+  :input-contract (and (integerp x) (integerp y))
+  :output-contract (integerp (f10 x y))
+  (if (equal x 0)
+    0
+    (+ (* 2 y) (f10 (+ x 1) y))))
+    
+Not admissible, non-terminating.
+(f10 1 2)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+11.
+
+(defunc f11 (x n)
+  :input-contract (and (listp x) (posp n))
+  :output-contract (listp (f11 x n))
+  (if (equal n 0)
+    (list n)
+    (f11 (cons (rest x) (first x)) (- n 1))))
+
+Not admissible, non-wellformed body. The body of the function fails to check
+whether or not x is nil before attempting to call (rest x) which is not valid.
+
+TODO:justification name?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+12.
+
+(defunc f12 (x)
+  :input-contract (posp x)
+  :output-contract (posp (f12 x))
+  (if (equal x 1)
+      9
+    (f12 (+ 10 (f12 (- x 1))))))
+    
+Not admissible, non-terminating. 
+(f12 2).  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+13.
+
+(defunc f13 (x)
+  :input-contract (posp x)
+  :output-contract (integerp (f13 x))
+  (if (equal x 1)
+    9
+    (- 10 (f13 (- x 2)))))
+    
+Not admissible, body contract violation. 
+(f13 2).
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+14.
+
+(defunc f14 (x y)
+  :input-contract  (and (posp x) (posp y))
+  :output-contract (posp (f14 x y))
+  (cond ((equal x y)                   1)
+        ((> x y)                       (f14 y x))
+        (t                             (f14 x (- y x)))))
+
+Admissible.
+
+1. Body contracts hold because in the second condition 
+   (the first in which f14 could recur) f14 is passed in two arguments which
+   have already been proven to satisfy f14's input contract. It substitutes 
+   one argument for the other, which is permissible.
+   In the third condition, the first argument f14 is passed is unmanipulated 
+   and satisfies the input contract. The second argument is the subtraction of 
+   x, which is less than and not equal to y, from y. This ensures that the second
+   argument will still be positive.
+2. Contract theorem holds because given valid input, f14's stopping condition, 
+   (equal x y), returns 1, which satisfies the output contract. 
+3. (defunc m-f14 (x y)
+     :input-contract (and (posp x)(posp y))
+     :output-contract (natp (m-f14 x y))
+     (+ y x))  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+15.
+
+(defunc f15 (x y)
+  :input-contract (and (posp x) (posp y))
+  :output-contract (integerp (f15 x y))
+  (cond ((< x 1)     (f15 x y))
+        ((equal x 1) 10)
+        (t           (* 10 (f15 (- x 1) y)))))
+
+Admissible.
+
+1. Body contracts hold because the input contract ensures that 
+   f15 will never be passed an integer less than 1, so the first condition 
+   will never be accessed. The third condition, in which f15 recurs, f15 is
+   passed x - 1, which is a positive number, as x is a positive number 
+   not equal to 1. It is also passed in an unmanipulated y, which has 
+   already satisfied the input contract. 
+2. Contract theorem holds because given valid input, f15's stopping condition
+   (equal x 1) returns 10, which satisfies the output contract. 
+3. (defunc m-f15 (x y)
+     :input-contract (and (posp x)(posp y))
+     :output-contract (natp (m-f15 x y))
+     (+ y x))  
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+16.
+
+(defunc f16 (x y)
+  :input-contract (and (listp x) (posp y))
+  :output-contract (posp (f16 x y))
+  (if (endp x)
+    y
+    (+ 1 (f16 (rest x) y))))
+
+Admissible.
+
+1. Body contracts hold because in the third condition (in which f16 recurs)
+   f16 is passed the rest of x, where x is a non-empty list, and an 
+   unmanipulated y, which both satisfy the input contract. 
+2. Contract theorem holds because given valid input, f16's stopping condition
+   (endp x) returns y, a positive integer, satisfying the output contract. 
+3. (defunc m-f16 (x y)
+     :input-contract (and (listp x)(posp y))
+     :output-contract (natp (m-f3 x y))
+     (+ y (len x)))  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;;;;;;;;
+
+17.
+
+(defunc  f17 (l)
+  :input-contract (listp l)
+  :output-contract (listp (f17 l))
+  (cond ((endp l) l)
+        ((equal e (first l)) (rest l))
+        (t (cons (first l) (f17 e (rest l))))))
+        
+Not admissible, free instance of a variable. 
+e is not an established variable, so (equal e (first l)) cannot be called. 
+
+TODO:justification name?
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DOES IT TERMINATE?
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; For each of the following functions, mention whether the function terminates 
+;; or not. If it does, give a measure function for it (here we are not asking 
+;; you to prove anything). If it does not, give a concrete input on which it fails.
+#|
+
+
+(defunc f18 (n)
+  :input-contract (natp n)
+  :output-contract (natp (f18 n))
+  (if (equal n 0)
+    0
+    (+ (* (* n n) n) (f18 (- n 1)))))
+
+ Yes, f18 terminates. 
+ (defunc m-f18 (n)
+   :input-contract (natp n)
+   :output-contract (natp (m-f18 n))
+   n)
+
+(defunc  f19 (n)
+  :input-contract (integerp n)
+  :output-contract (integerp (f19 n))
+  (cond ((equal n 0) 1)
+        ((> n 0) (* n (f19 (- n 1))))
+        (t (* n (f19 (+ n 1))))))
+
+Yes, f19 terminates. 
+ (defunc m-f19 (n)
+   :input-contract (integerp n)
+   :output-contract (natp (m-f19 n))
+   (- n 1))
+
+
+(defunc  f20 (n)
+  :input-contract (integerp n)
+  :output-contract (integerp (f20 n))
+  (cond ((equal n 0) 1)
+        (t (* n (f20 (- n 1))))))
+        
+Non-terminating, (f20 -1).       
+
+
+(defunc  f21 (e l)
+  :input-contract (listp l)
+  :output-contract (listp (f21 e l))
+  (cond ((endp l) l)
+        ((equal e (first l)) (f21 e (rest l)))
+        (t (cons (first l) (f21 e (rest l))))))
+
+Yes, f21 terminates. 
+ (defunc m-f21 (e l)
+   :input-contract (listp l)
+   :output-contract (natp (m-f21 n))
+   (len l))        
+
+
+(defunc  f22 (e l)
+  :input-contract (listp l)
+  :output-contract (listp (f22 e l))
+  (cond ((endp l) l)
+        ((equal e (first l)) (f22 e l))
+        (t (cons (first l) (f22 e (rest l))))))
+        
+Non-terminating, (f22 7 '(7 2)).         
+
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; PROVING A MEASURE
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+#|
+
+For the following problems, whenever you are asked to prove termination of
+some function f, provide a measure function m such that
+
+Condition 1. m has the same arguments and the same input contract as f.
+Condition 2. m's output contract is (natp (m ...))
+Condition 3. m is admissible.
+Condition 4. On every recursive call of f, given the input contract and 
+   the conditions that lead to that call, m applied to the arguments in
+   the call is less than m applied to the original inputs.
+
+You should do this proof as shown in class (which is also the way we will
+expect you to prove termination in exams):
+
+- Write down the propositional logic formalization of the condition 4.
+- Simplify the formula,
+- Use equational reasoning to conclude the formula is valid.
+
+Unless clearly stated otherwise, you need to follow these steps for EACH
+recursive call separately.
+
+Here is an example.
+
+(defunc f (x y)
+  :input-contract (and (listp x) (natp y))
+  :output-contract (natp (f x y))
+  (if (endp x)
+    (cond ((equal y 0) 0)
+          (t           (+ 1 (f x (- y 1)))))
+    (+ 1 (f (rest x) y))))
+
+The measure is
+(defunc m (x y)
+  :input-contract (and (listp x) (natp y))
+  :output-contract (natp (m x y))
+  (+ (len x) y))
+
+The propositional logic formalization for Proof of Condition 4 for the 
+first recursive call:
+(implies (and (listp x) (natp y))
+         (< (m x y-1) (m x y)))
+Proof of Condition 4 for the first recursive call:
+Context
+C1. (listp x)
+C2. (natp y)
+C3. (endp x)
+C4. y > 0
+
+(m x y-1)
+= { Def m, C3, Def len, C1, Arithmetic }
+y-1
+< { Arithmetic }
+y
+= { Def m, C3, Def len, C1, Arithmetic }
+(m x y)
+
+The propositional logic formalization for Proof of Condition 4 for the 
+second recursive call:
+(implies (and (listp x) (natp y))
+         (< (m (rest x) y) (m x y)))
+Proof of Condition 4 for the second recursive call:
+Context
+C1. (listp x)
+C2. (natp y)
+C3. (not (endp x))
+
+(m (rest x) y)
+= { Def m, C3 }
+(len (rest x)) + y
+< { Arithmetic, Decreasing len axiom }
+length(x) + y
+= { Def m }
+(m x y)
+
+Hence f terminates, and m is a measure function for it.
+QED
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+
+23. Prove termination for the following function:
+
+(defunc f23 (y z c)
+  :input-contract (and (natp y) (natp z) (integerp c))
+  :output-contract (integerp (f23 y z c))
+  (cond ((and (equal y 0) (equal z 0)) c)
+        ((> y 0)                       (f23 (- y 1) z (+ c 1)))
+        (t                             (f23 16 (- z 1) (- c 1)))))
+
+For this question, we are providing a measure function:
+
+(defunc m-f23 (y z c)
+  :input-contract (and (natp y) (natp z) (integerp c))
+  :output-contract (natp (m-f23 y z c))
+  (+ y (* 17 z)))
+
+For this question, we are also providing the propositional logic formalization 
+for Proof of Condition 4.
+
+For the first recursive call, we have:
+(implies (and (natp y) (natp z) (integerp c) 
+              (or (not (equal y 0)) (not (equal z 0)))
+              (> y 0))
+         (< (m-f23 (y-1) z (c+1)) (m-f23 y z c))
+Now prove the above using equational reasoning
+...
+
+
+For the second recursive call, we have:
+(implies (and (natp y) (natp z) (integerp c) 
+              (or (not (equal y 0)) (not (equal z 0))) 
+              (not (y > 0)))
+         (< (m-f23 16 (z-1) (c-1)) (m-f23 y z c))
+Now prove the above using equational reasoning
+...
+
+|#

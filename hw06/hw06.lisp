@@ -1,0 +1,905 @@
+; **************** BEGIN INITIALIZATION FOR ACL2s B MODE ****************** ;
+; (Nothing to see here!  Your actual file is after this initialization code);
+
+#|
+Pete Manolios
+Fri Jan 27 09:39:00 EST 2012
+----------------------------
+
+Made changes for spring 2012.
+
+
+Pete Manolios
+Thu Jan 27 18:53:33 EST 2011
+----------------------------
+
+The Beginner level is the next level after Bare Bones level.
+
+|#
+
+; Put CCG book first in order, since it seems this results in faster loading of this mode.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading the CCG book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "ccg/ccg" :uncertified-okp nil :dir :acl2s-modes :ttags ((:ccg)) :load-compiled-file nil);v4.0 change
+
+;Common base theory for all modes.
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s base theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "base-theory" :dir :acl2s-modes)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s customizations book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "custom" :dir :acl2s-modes :uncertified-okp nil :ttags :all)
+
+;Settings common to all ACL2s modes
+(acl2s-common-settings)
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading trace-star and evalable-ld-printing books.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "trace-star" :uncertified-okp nil :dir :acl2s-modes :ttags ((:acl2s-interaction)) :load-compiled-file nil)
+(include-book "hacking/evalable-ld-printing" :uncertified-okp nil :dir :system :ttags ((:evalable-ld-printing)) :load-compiled-file nil)
+
+;theory for beginner mode
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem loading ACL2s beginner theory book.~%Please choose \"Recertify ACL2s system books\" under the ACL2s menu and retry after successful recertification.") (value :invisible))
+(include-book "beginner-theory" :dir :acl2s-modes :ttags :all)
+
+
+#+acl2s-startup (er-progn (assign fmt-error-msg "Problem setting up ACL2s Beginner mode.") (value :invisible))
+;Settings specific to ACL2s Beginner mode.
+(acl2s-beginner-settings)
+
+; why why why why 
+(acl2::xdoc acl2s::defunc) ; almost 3 seconds
+
+(cw "~@0Beginner mode loaded.~%~@1"
+    #+acl2s-startup "${NoMoReSnIp}$~%" #-acl2s-startup ""
+    #+acl2s-startup "${SnIpMeHeRe}$~%" #-acl2s-startup "")
+
+
+(acl2::in-package "ACL2S B")
+
+; ***************** END INITIALIZATION FOR ACL2s B MODE ******************* ;
+;$ACL2s-SMode$;Beginner
+#|
+CS 2800 Homework 6 - Fall 2016
+
+This homework is done in groups. HOWEVER, this homework
+is designed to be a review of the exam material. I strongly
+recommend that you each do everything individually and then
+combine your responses at the end.
+
+The rules are:
+
+ * ALL group members must submit the homework file (this file)
+
+ * The file submitted must be THE SAME for all group members (we
+   use this to confirm that alleged group members agree to be
+   members of that group)
+
+ * You must list the names of ALL group members below using the
+   format below. If you fail to follow instructions, that costs
+   us time and it will cost you points, so please read carefully.
+
+
+Names of ALL group members: Prashan Parvani, Laura Romero-Suarez, Khyati Singh
+
+Note: There will be a 10 pt penalty if your names do not follow 
+this format.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+For this homework you will need to use ACL2s.
+
+Technical instructions:
+
+- open this file in ACL2s as hw06.lisp
+
+- make sure you are in BEGINNER mode. This is essential! Note that you can
+  only change the mode when the session is not running, so set the correct
+  mode before starting the session.
+
+- insert your solutions into this file where indicated (usually as "...")
+
+- only add to the file. Do not remove or comment out anything pre-existing
+  unless asked to.
+
+- make sure the entire file is accepted by ACL2s. In particular, there must
+  be no "..." left in the code. If you don't finish all problems, comment
+  the unfinished ones out. Comments should also be used for any English
+  text that you may add. This file already contains many comments, so you
+  can see what the syntax is.
+
+- when done, save your file and submit it as hw06.lisp
+
+- avoid submitting the session file (which shows your interaction with the
+  theorem prover). This is not part of your solution. Only submit the lisp
+  file!
+  
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Instructions for equational reasoning problems:
+
+- If not given in the "correct" format, use propositional reasoning to 
+  rewrite the conjecture into an implication
+  with a conjunction of hypotheses in the antecedent and a single
+  expression in the conclusion. If that is not possible, you may have to
+  split the proof into several parts such that each part can be rewritten
+  into such an implication.
+
+- for each implication, extract the context (the hypotheses), and determine
+  the derived context: anything that follows immediately from the context
+  expressions and may be useful later.
+
+- now perform the proof.
+
+When writing your equational reasoning proofs be sure to justify each step
+in the style shown in class, eg.
+
+  (len ())
+= { def len }
+  0
+
+You can use basic arithmetic facts for free, but in the justification write
+"arithmetic", e.g.,
+
+  (first x) + (len (rest x)) + (sum y) + 0
+= { Arithmetic }
+  (sum y) + (first x) + (len (rest x))
+
+You may use infix notation like x+y+z for arithmetic operators (as done
+above), instead of the LISP style prefix notation like (+ x (+ y z)).
+
+You can of course also use previously (in class or in homework) proved
+theorems. In this case, cite the theorem in the justification, and give the
+substitution (if unclear) that shows how you instantiated the theorem.
+
+Recall that for each of the defunc's above we have both a definitional axiom
+
+(ic => (f <args>) = <function body>)
+
+(you can refer to it in justifications as "def. f" or the "definitional axiom of f"), 
+and a contract theorem
+
+(ic => oc)
+
+(you can refer to it in justifications as "oc of f" or the "contract axiom").
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+Instructions for programming problems:
+
+For each function definition, you must provide both contracts and a body.
+
+You must also ALWAYS supply your own tests. This is in addition to the
+tests sometimes provided. Make sure you produce sufficiently many new test
+cases. This means: cover at least the possible scenarios according to the
+data definitions of the involved types. For example, a function taking two
+lists should have at least 4 tests: all combinations of each list being
+empty and non-empty.
+
+Beyond that, the number of tests should reflect the difficulty of the
+function. For very simple ones, the above coverage of the data definition
+cases may be sufficient. For complex functions with numerical output, you
+want to test whether it produces the correct output on a reasonable
+number of inputs.
+
+Use good judgment. For unreasonably few test cases we will deduct points.
+
+We will use ACL2s' check= function for tests. This is a two-argument
+function that rejects two inputs that do not evaluate equal. You can think
+of check= roughly as defined like this:
+
+(defunc check= (x y)
+  :input-contract (equal x y)
+  :output-contract (equal (check= x y) t)
+  t)
+
+That is, check= only accepts two inputs with equal value. For such inputs, t
+(or "pass") is returned. For other inputs, you get an error. If any check=
+test in your file does not pass, your file will be rejected.
+
+Calls to test? are considered even more powerful.  Try to use
+both
+
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Problem 1: PROGRAMMING IN ACL2s
+;; Sudoku Validator
+;; For Information on how to play: 
+;; http://www.sudokukingdom.com/rules.php
+;; or https://en.wikipedia.org/wiki/Sudoku
+;;
+;; Let's make a Sudoku tester such that any sudoku board can be evaluated to see
+;; if it was done correctly, there are empty cells (indicated by '-) or there is
+;; a mistake in the solution.
+;; To do this, the validator must check each row, each column and each 3x3 block in
+;; the 9 regions of the board to ensure all 9 numbers are present.
+;; Any invalid row, column or block means the sudoku board has not been solved 
+;; correctly.
+
+;; Define the set of admissible symbols in a 9x9 sudoku grid.
+(defdata snum (range integer (0 < _ <= 9)))
+(defdata sval (oneof '- snum))
+
+;; A group of sudoku numbers consists of 9 positions
+;; (a row, column, or 3x3 block) which are either the
+;; number you chose OR still blank (indicated by '-)
+(defdata sgroup (list sval sval sval sval sval sval sval sval sval))
+
+;; s-subgroups can be recursively traversed and may have fewer than 9
+;; elements.
+(defdata s-subgroup (listof sval))
+
+(defdata group-type (oneof 'row 'column 'block))
+
+;; Theorem to aid the theorem prover
+(defthm s-subGroupThm (implies (sgroupp g) (s-subgroupp g))) 
+
+;; a sudoku board contains 9 sgroups indicating
+;; each ROW of the board.
+(defdata s-board (list sgroup sgroup sgroup 
+                       sgroup sgroup sgroup 
+                       sgroup sgroup sgroup))
+
+;; Make your own sudoku board to test your results.
+;; Here is one to play with.
+(defconst *test-row1* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row2* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row3* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row4* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row5* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row6* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row7* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row8* (list 1 2 3 4 5 6 7 8 9))
+(defconst *test-row9* (list 1 2 3 4 5 6 7 8 9))
+
+(defconst *test-board* (list *test-row1* *test-row2* *test-row3*
+                             *test-row4* *test-row5* *test-row6*
+                             *test-row7* *test-row8* *test-row9*))
+
+;; Given the need to traverse the various rows,
+;; an s-subboard can have fewer than 9 elements
+;; and may even have zero elements.
+(defdata s-subboard (listof sgroup))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; no-dupes: list -> boolean
+;;
+;; Standard function that finds out if list l has duplicate
+;; elements.
+(defunc no-dupes (l)
+  :input-contract (listp l)
+  :output-contract (booleanp (no-dupes l))
+  (if (endp l)
+    t
+    (if (in (first l)(rest l))
+      nil
+      (no-dupes (rest l)))))
+
+(test? (implies (and (listp l1) (listp l2) (listp l3))
+                (not (no-dupes (app l1 (app (cons e l2)(cons e l3)))))))
+(test? (implies (and (listp l)(no-dupes l))
+                (not (in (first l) (rest l)))))
+
+(check= (no-dupes '(a b c d e)) t)
+(check= (no-dupes '(a b c b e)) nil)
+(check= (no-dupes nil) t)
+(check= (no-dupes '(a)) t)
+
+(defthm snum-inc-thm (implies (and (snump s)(not (equal s 9)))
+                              (snump (+ s 1))))
+(defthm snum-dec-thm (implies (and (snump s)(not (equal s 1)))
+                              (snump (- s 1))))
+
+(defthm list-len-thm (implies (and (listp l)(snump n)
+                                   (>= (len l) n))
+                              (listp (rest l))))
+
+;; NOTE: Once again, weird stuff is going on with ACL2s 
+;; this term (it's abnormal) where
+;; it can't prove basic information, presumably due to
+;; nested defdata definitions.  As a time-saving measure
+;; (since this is a review assignment), I'm using program 
+;; mode.  The solver REALLY doesn't like s-boards. Like
+;; HW4, there will be a bonus if anyone can have everything
+;; work in logic mode.  Right now even basic stuff like 
+;; (s-boardp b) => ((len b) = 9) aren't working and I can't
+;; expect you to work in logic mode if I'm spending hours
+;; trying to do so.
+:program
+
+;; Make your own sudoku board to test your results.
+(defconst *test2-row1* (list 8 5 6 3 7 2 4 9 1))
+(defconst *test2-row2* (list 1 9 4 5 6 8 3 7 2))
+(defconst *test2-row3* (list 2 7 3 1 9 4 8 6 5))
+(defconst *test2-row4* (list 5 3 2 9 4 6 1 8 7))
+(defconst *test2-row5* (list 7 4 9 8 5 1 2 3 6))
+(defconst *test2-row6* (list 6 8 1 7 2 3 9 5 4))
+(defconst *test2-row7* (list 9 1 5 4 8 7 6 2 3))
+(defconst *test2-row8* (list 4 6 8 2 3 5 7 1 9))
+(defconst *test2-row9* (list 3 2 7 6 1 9 5 4 8))
+
+(defconst *test2-board* (list *test2-row1* *test2-row2* *test2-row3*
+                             *test2-row4* *test2-row5* *test2-row6*
+                             *test2-row7* *test2-row8* *test2-row9*))
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; valid-sgroupp: sgroup -> Boolean
+;; (valid-sgroupp g) returns true if the sgroup
+;; g constains all 9 snum values with no repetition.
+;; The blank cell symbol '- cannot be found.
+;; NOTE: Do NOT just check to see if each of the 9 symbols are
+;; present.....that's for later. How else can you check 
+;; if a group is valid?
+(defunc valid-sgroupp (g)
+  :input-contract (sgroupp g)
+  :output-contract (booleanp (valid-sgroupp g))
+  (and (no-dupes g)
+       (not (in '- g))))
+
+(check= (valid-sgroupp *test2-row7*) t)
+(check= (valid-sgroupp *test-row1*) t)
+;;;;;;;;;; WRITE ADDITIONAL TESTS ;;;;;;;;;;;;;;;;;;
+(check= (valid-sgroupp (list '- 2 3 4 5 6 7 8 9)) nil)
+(check= (valid-sgroupp (list 1 2 3 4 5 6 7 7 7)) nil)
+(check= (valid-sgroupp *test2-row9*) t)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; get-row-cell: snum x s-subgroup -> sval
+;;
+;; (get-row-cell c g) takes a column index c
+;; and a s-subgroup g and returns the value at cell c.
+;; OPTIONAL: Feel free to improve the function input (just 
+;; make sure it works)
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defunc get-row-cell (c g)
+  :input-contract (and (snump c) (s-subgroupp g))
+  :output-contract (svalp (get-row-cell c g))
+  (if (> c (len g))
+    '-
+    (nth (- c 1) g)))
+
+(check= (get-row-cell 4 *test-row1*) 4)
+(check= (get-row-cell 2 (list 1)) '-)
+(check= (get-row-cell 5 (list 3 8 9 2 4 7 1)) 4)
+(check= (get-row-cell 1 (list 9 3 8 7 6 5 1)) 9)
+(check= (get-row-cell 9 (list 1 9 7 3)) '-)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; get-cell: snum x snum x s-subboard -> sval
+;;
+;; (get-cell r c b) takes a row index r, a column index c
+;; and a s-subboard b and returns the value at cell (r, c).
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+(defunc get-cell (r c b)
+  :input-contract (and (snump r) (snump c) (s-subboardp b))
+  :output-contract (svalp (get-cell r c b))
+  (if (> r (len b))
+    '-
+    (nth (- c 1) (nth (- r 1) b))))
+
+(defconst *test-board-ex* (list (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)
+                                 (list 1 2 3 4 5 6 7 8 9)))
+
+(check= (get-cell 1 1 *test-board-ex*) 1)
+(check= (get-cell 9 9 *test-board-ex*) 9)
+(check= (get-cell 7 9 *test-board-ex*) 9)
+(check= (get-cell 1 7 *test-board-ex*) 7)
+(check= (get-cell 1 8 *test-board-ex*) 8)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; get-row: snum x s-board -> sgroup 
+;; (get-row idx b) take an index idx between 1 and 9 and
+;; a sudoku board b and returns a sgroup or group of 9
+;; values representing all elements in the idx-th row
+;; of b. 
+;; To simplify your life, this does not have to use recursion 
+;; and don't worry too much about speed.
+;; NOTE: in this and subsequent functions, your solution does NOT
+;; have to be recursive.   You know there are exactly 9 sval elements 
+;; in each sgroup.
+(defunc get-row (idx b)
+  :input-contract (and (snump idx)(s-boardp b))
+  :output-contract (sgroupp (get-row idx b))
+  (nth (- idx 1) b))
+   
+(check= (valid-sgroupp (get-row 1 *test2-board*)) t)
+(check= (valid-sgroupp (get-row 5 *test-board*)) t)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; get-column: snum x s-board -> sgroup 
+;; (get-column idx b) take an index idx between 1 and 9 and
+;; a sudoku board b and returns a sgroup or group of 9
+;; values representing all elements in the idx-th column
+;; of b.
+(defunc get-column (idx b)
+  :input-contract (and (snump idx)(s-boardp b))
+  :output-contract (sgroupp (get-column idx b))
+  (list   (nth (- idx 1) (nth 0 b))
+          (nth (- idx 1) (nth 1 b))
+          (nth (- idx 1) (nth 2 b))
+          (nth (- idx 1) (nth 3 b))
+          (nth (- idx 1) (nth 4 b))
+          (nth (- idx 1) (nth 5 b))
+          (nth (- idx 1) (nth 6 b))
+          (nth (- idx 1) (nth 7 b))
+          (nth (- idx 1) (nth 8 b))))
+
+
+(check= (valid-sgroupp (get-column 1 *test2-board*)) t)
+(check= (valid-sgroupp (get-column 1 *test-board*)) nil)
+#|
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; OPTIONAL HELPER FUNCTION: delete if you don't use this.
+;; get-block-offset: nat x nat x s-board
+;;
+;; (get-block-offset offr offc b) takes two offset values 
+;; offr and offc between 0 and 6 (inclusive) and a 
+;; sudoku board b and creates a 3x3 block of cells offr 
+;; rows in from row 1 and offc rows in from column 1
+(defunc get-block-offset (offr offc b)
+  :input-contract (and (natp offr) (natp offc)
+                       (< offc 7)(< offr 7)
+                       (s-boardp b))
+  :output-contract (sgroupp (get-block-offset offr offc b))
+  ................)
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; DEFINE
+;; get-block: snum x s-board -> sgroup 
+;; (get-block idx b) take an index idx between 1 and 9 and
+;; a sudoku board b and returns a sgroup or group of 9
+;; values representing all elements in the idx-th block
+;; of b. Block are numbered from the top left (with cell (1,1))
+;; to the top right (with cell 1, 9) and then from top to bottom
+;; Thus block 9 includes cell (9,9). Cells in a block are numbered
+;; in the same way.
+;; A helper function may be useful.
+(defunc get-block (idx b)
+  :input-contract (and (snump idx)(s-boardp b))
+  :output-contract (sgroupp (get-block idx b))
+  (cond
+   ((equal 1 idx)
+    (list (get-cell 1 1 b)(get-cell 1 2 b)(get-cell 1 3 b)
+          (get-cell 2 1 b)(get-cell 2 2 b)(get-cell 2 3 b)
+          (get-cell 3 1 b)(get-cell 3 2 b)(get-cell 3 3 b)))
+   ((equal 2 idx)
+    (list (get-cell 1 4 b)(get-cell 1 5 b)(get-cell 1 6 b)
+          (get-cell 2 4 b)(get-cell 2 5 b)(get-cell 2 6 b)
+          (get-cell 3 4 b)(get-cell 3 5 b)(get-cell 3 6 b)))
+   ((equal 3 idx)
+    (list (get-cell 1 7 b)(get-cell 1 8 b)(get-cell 1 9 b)
+          (get-cell 2 7 b)(get-cell 2 8 b)(get-cell 2 9 b)
+          (get-cell 3 7 b)(get-cell 3 8 b)(get-cell 3 9 b)))
+   ((equal 4 idx)
+    (list (get-cell 4 1 b)(get-cell 4 2 b)(get-cell 4 3 b)
+          (get-cell 5 1 b)(get-cell 5 2 b)(get-cell 5 3 b)
+          (get-cell 6 1 b)(get-cell 6 2 b)(get-cell 6 3 b)))
+   ((equal 5 idx)
+    (list (get-cell 4 4 b)(get-cell 4 5 b)(get-cell 4 6 b)
+          (get-cell 5 4 b)(get-cell 5 5 b)(get-cell 5 6 b)
+          (get-cell 6 4 b)(get-cell 6 5 b)(get-cell 6 6 b)))
+   ((equal 6 idx)
+    (list (get-cell 4 7 b)(get-cell 4 8 b)(get-cell 4 9 b)
+          (get-cell 5 7 b)(get-cell 5 8 b)(get-cell 5 9 b)
+          (get-cell 6 7 b)(get-cell 6 8 b)(get-cell 6 9 b)))
+   ((equal 7 idx)
+    (list (get-cell 7 1 b)(get-cell 7 2 b)(get-cell 7 3 b)
+          (get-cell 8 1 b)(get-cell 8 2 b)(get-cell 8 3 b)
+          (get-cell 9 1 b)(get-cell 9 2 b)(get-cell 9 3 b)))
+   ((equal 8 idx)
+    (list (get-cell 7 4 b)(get-cell 7 5 b)(get-cell 7 6 b)
+          (get-cell 8 4 b)(get-cell 8 5 b)(get-cell 8 6 b)
+          (get-cell 9 4 b)(get-cell 9 5 b)(get-cell 9 6 b)))
+   ((equal 9 idx)
+    (list (get-cell 7 7 b)(get-cell 7 8 b)(get-cell 7 9 b)
+          (get-cell 8 7 b)(get-cell 8 8 b)(get-cell 8 9 b)
+          (get-cell 9 7 b)(get-cell 9 8 b)(get-cell 9 9 b)))))
+
+(check= (get-block 1 *test-board*) (list 1 2 3 1 2 3 1 2 3))
+(check= (get-block 1 *test2-board*) (list 8 5 6 1 9 4 2 7 3))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Testing all the get methods
+
+(check= (get-row 1 *test2-board*) *test2-row1*)
+(check= (get-row 5 *test-board*) *test-row5*)
+
+(check= (get-column 2 *test2-board*) '(5 9 7 3 4 8 1 6 2))
+(check= (get-column 5 *test-board*) '(5 5 5 5 5 5 5 5 5))
+
+(get-block 7 *test2-board*)
+*test2-board*
+(list (get-cell 1 7 *test2-board*)
+      (get-cell 2 7 *test2-board*)
+      (get-cell 3 7 *test2-board*))
+ (get-cell 1 7 *test2-board*)
+
+(check= (get-block 7 *test2-board*) '(9 1 5 4 6 8 3 2 7))
+(check= (get-block 9 *test-board*) '(7 8 9 7 8 9 7 8 9))
+;;;;;;;;;;;;;;;;;;; ADD YOUR OWN TESTS ;;;;;;;;;;;;;;
+
+(check= (get-row-cell 4 *test-row1*) 4)
+(check= (get-row-cell 2 (list 1)) '-)
+(check= (get-row-cell 5 (list 3 8 9 2 4 7 1)) 4)
+(check= (get-row-cell 1 (list 9 3 8 7 6 5 1)) 9)
+(check= (get-row-cell 9 (list 1 9 7 3)) '-)
+
+(check= (get-cell 1 1 *test-board-ex*) 1)
+(check= (get-cell 9 9 *test-board-ex*) 9)
+(check= (get-cell 7 9 *test-board-ex*) 9)
+(check= (get-cell 1 7 *test-board-ex*) 7)
+(check= (get-cell 1 8 *test-board-ex*) 8)
+(check= (get-cell 1 9 *test-board-ex*) 9)
+(check= (get-cell 2 7 *test-board-ex*) 7)
+(check= (get-cell 2 8 *test-board-ex*) 8)
+(check= (get-cell 2 9 *test-board-ex*) 9)
+(check= (get-cell 3 7 *test-board-ex*) 7)
+(check= (get-cell 3 8 *test-board-ex*) 8)
+(check= (get-cell 3 9 *test-board-ex*) 9)
+
+(check= (get-column 1 *test-board-ex*) (list 1 1 1 1 1 1 1 1 1))
+(check= (get-column 9 *test-board-ex*) (list 9 9 9 9 9 9 9 9 9))
+(check= (get-column 8 *test2-board*) (list 9 7 6 8 3 5 2 1 4))
+
+(check= (get-block 7 *test2-board*) (list 9 1 5 4 6 8 3 2 7))
+(check= (get-block 7 *test-board-ex*) (list 1 2 3 1 2 3 1 2 3))#|ACL2s-ToDo-Line|#
+
+
+#|
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Question 2: Prove that your version of
+;; valid-groupp is equivalent to valid-sgroup2p
+;; below using equational reasoning.
+(defunc valid-sgroup2p (g)
+  :input-contract (sgroup g)
+  :output-contract (booleanp (valid-sgroup2p g))
+  (and (in 1 g)(in 2 g)(in 3 g)
+       (in 4 g)(in 5 g)(in 6 g)
+       (in 7 g)(in 8 g)(in 9 g)))
+
+In other words prove the following expression is valid.
+(implies (sgroup g) ((valid-sgroup2p g) = (valid-sgroupp g))
+
+which is the same as saying:
+(implies (sgroupp g) (and (implies (valid-sgroup2p g)
+                                   (valid-sgroupp g))
+                          (implies (valid-sgroupp g)
+                                   (valid-sgroup2p g))))
+
+;; YOU can use the following theorems without proving them
+
+T1: (implies (svalp e) 
+             (or (equal 1 e)(equal 2 e)(equal 3 e)
+                 (equal 4 e)(equal 5 e)(equal 6 e)
+                 (equal 7 e)(equal 8 e)(equal 9 e)
+                 (equal '- e)))
+Notice T1 is technically just another way to define svalp.
+                 
+T2: (implies (and (svalp e)(svalp f)(sgroup g) (not (equal e f)))
+             (implies (and (no-dupes g)(not (in e g)))
+                      (in f g)))
+                  
+T3: (implies (and (sgroupp g)(no-dupes g))
+             (implies (in '- g)
+                      (not (and (in 1 g)(in 2 g)(in 3 g)(in 4 g)
+                                (in 5 g)(in 6 g)(in 7 g)(in 8 g)
+                                (in 9 g)))))
+Notice this does not indicate what elements are in g, just
+that it can't be all elements 1 to 9.....how can we use this?
+
+;; Now some relationships that come directly from the data definitions
+;; but may be easier for you to use in this format.
+;; You can assume that (in e g)=true describes SOME valid element in g.
+;; Just assume the function "in" does what you expect without formally
+;; proving it.
+T4: (implies (sgroupp g)(equal (len g) 9))
+T5: (implies (and (sgroupp g)(in e g))
+             (svalp e))
+T6: (implies (sgroupp g)
+             (implies (and (in 1 g)(in 2 g)(in 3 g)(in 4 g)
+                           (in 5 g)(in 6 g)(in 7 g)(in 8 g)
+                           (in 9 g))
+                      (no-dupes g)))
+                      
+                      
+C1. (sgroup g)
+
+LHS                                                         
+--------------                                            
+(valid-sgroup2p g)                                     
+= {def of valid-sgroup2p, C1}                               
+
+(and (in 1 g)(in 2 g)(in 3 g)
+     (in 4 g)(in 5 g)(in 6 g)
+     (in 7 g)(in 8 g)(in 9 g))
+= {C1, T6, MP}
+
+(no-dupes g)
+= {C1,T6, T3, MT}
+
+(and (no-dupes g)
+     (not (in '~ g)))
+     
+     
+RHS
+----------------
+(valid-sgroupp g)
+= {def of valid-sgroupp, C1}
+
+(and (no-dupes g)
+      (not (in '~ g)))
+      
+      
+
+|#
+
+#|
+Question 3: 
+Never mind.  Prove T2.  Don't just assume it works.
+However, notice that we probably should 
+generalize this.  
+a) Instead of proving T2, prove the following
+conjecture which we can derive T2 from (theoretically).
+
+T2b: (implies (and (listp g)(no-dupes g) (not (endp g)))
+              (not (in (first g) (rest g))))
+              
+              
+              
+C1. (listp g)
+C2. (not (endp g))
+C3. (no-dupes g)
+------------------------------
+(not (in (first g)(rest g)))
+= {C1, C2, C3, def of no-dupes, if-axiom}
+(not nil)
+={Boolean logic}
+T
+
+
+b) Wait.....how does this help us???  Well let's consider the 
+set of elements in sval:
+sv=('- 1 2 3 4 5 6 7 8 9).  
+The (rest sv) can be any order without loss of generality.
+Clearly (in '- sv) is true, as is (in 2 sv).  You can also simply state (without  justification) that (in e sv) = (svalp e) for any element e.
+Prove T2 by instantiating T2b. Indicate what instantiation you used in your proof by 
+using the format 
+<Theorem>|((a b)) where a is the variable replaced and b is what it is replaced by.
+
+|#
+
+#|
+Question 4: Propositional Logic.
+Prove that the following equalities are valid using logical 
+equivalences (aka show LHS = RHS) OR give a counter-example.
+Make sure you show your justifications each step.
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+a) ((p /\ q /\ (r \/ ~r)) => (~(p\/q) => r)) = ~(p <> p)
+
+((p /\ q /\ T) => (~(p\/q) => r)) = ~(p <> p)
+={Complement Rule}
+((p /\ q) => (~(p\/q) => r)) = T
+={xor axiom, not rule}
+((p /\ q) /\ (~(p\/q) => r)) = T
+={Exportation}
+((p /\ q) /\ (~p/\~q) => r)) = T
+={DeMorgan's Rule}
+(F => r) = T
+= {Complement Rule}
+T \/ r = T
+={p => q == ~p \/ q (Relation of Implication)}
+T = T
+={p \/ t = t (Boolean Logic)}
+T
+QED
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+b) (r /\(p /\ (q \/ r))) = (p /\ r) 
+
+(r /\ ((p /\ q) \/ (p /\ r))) = (p /\ r)
+={Distribution Rule}
+(r /\ ((p \/ p) /\ (p \/ q) /\ (p \/ q) /\ (q \/ r))) = (p /\ r)
+={Distribution Rule}
+(r /\ (T /\ (p \/ q) /\ (q \/ r))) = (p /\ r)
+={Complement Rule, Idempotent Rule}
+(r /\ p) \/ (r /\ q) /\ (r /\ q) \/ (r /\ r))) = (p /\ r)
+={Distribution Rule}
+(r /\ p) \/ (r /\ q) \/ T)) = (p /\ r)
+={Complement Rule, Idempotent Rule}
+p /\ r \/ (r /\ q))) = (p /\ r)
+={Association Rule}
+(p /\ r) = (p /\ r)
+={Absorption Rule}
+T
+LHS == RHS
+QED
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+c) (b <> (c \/ ~a) = (~ b /\ (c \/ ~ a)) \/ (b /\ (~c /\ a))
+
+(b <> (c \/ ~a) = ( (~b /\ c) \/ (~b /\ ~ a) ) \/ (b /\ ~c /\ a)
+={Distribution Rule}
+={Expanded XOR}
+T
+QED
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+|#
+
+
+#|
+ ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+ Extra Practice Questions (no marks)
+ Well since the exam is fast approaching, here are some extra
+ problems to solve if you want.  These will not be marked.
+|#
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; SUBSTITUTIONS
+;;P1. Let phi = (f (f h (f h 'f))) and sigma = ((f (+ f h)) (h (- h f))) .
+;;Determine phi|sigma.
+
+;;P2 Determine (phi|sigma)|sigma.
+;(f (f (- (- h f) (+ f h)) (f (- (- h f) (+ f h)) 'f)))
+
+;;P3. Let phi = (+ (f '(x y) y) (- x z)) and psi = (+ (f '(x y) x) (- y (+ x y))) .
+;;Does there exist sigma such that phi|sigma = psi ? If yes, give one.
+
+;;P4. Let psi = (foo (+ a b) (bar (+ a b) x)) and sigma = ((x (+ a b)) (y x))
+;;Find two non-equivalent formulas phi1 and phi2 such that phi1|sigma = phi2|sigma = psi
+
+;;P5. Let f and g be Boolean formulas such that exactly one of f, g is falsifiable, and both are
+;;satisfiable. Then f xor g is satisfiable.  True or false? Justify your answer.
+
+
+#|
+
+Here are the definitions used for the remainder of the questions.
+(Note: these may be different from earlier definitions of these functions
+-- what counts are the definitions provided here.)
+
+(defunc len (x)
+  :input-contract (listp x)
+  :output-contract (natp (len x))
+  (if (endp x)
+    0
+    (+ 1 (len (rest x)))))
+
+(defunc app (a b)
+  :input-contract (and (listp a) (listp b))
+  :output-contract (listp (app a b))
+  (if (endp a)
+    b
+    (cons (first a) (app (rest a) b))))
+
+(defunc rev (x)
+  :input-contract (listp x)
+  :output-contract (listp (rev x))
+  (if (endp x)
+    nil
+    (app (rev (rest x)) (list (first x)))))
+
+(defdata natlist (listof nat))
+
+(defunc sum (l)
+  :input-contract (natlistp l)
+  :output-contract (natp (sum l))
+  (if (endp l)
+      0
+    (+ (first l) (sum (rest l)))))
+
+(defunc list-of-t (n)
+  :input-contract (natp n)
+  :output-contract (listp (list-of-t n))
+  (if (equal n 0)
+      nil
+      (cons t (list-of-t (- n 1)))))
+
+(defunc in2 (a l)
+  :input-contract (listp l)
+  :output-contract (booleanp (in2 a l))
+  (if (endp l)
+    nil
+    (or (equal a (first l)) (in2 a (rest l)))))
+
+(defunc subsetp (l1 l2)
+  :input-contract (and (listp l1) (listp l2))
+  :output-contract (booleanp (subsetp l1 l2))
+  (if (endp l1)
+    t
+    (and (in2 (first l1) l2) (subsetp (rest l1) l2))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+For each of the following conjectures:
+
+- perform conjecture contract checking, and add hypotheses if necessary
+
+- run some tests to make an educated guess as to whether the conjecture is
+  true or false. In the latter case, give a counterexample to the
+  conjecture, and show that it evaluates to false. In the former case,
+  prove the conjecture, following the instructions stated above under
+  "Instructions for equational reasoning problems".
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+P7.
+
+(implies (listp x)
+         (equal (app (rev x) (rev y))
+                (rev (app x y))))
+
+...
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+Prove the following conjectures using equational reasoning. Follow the in-
+structions stated above under "Instructions for equational reasoning problems".
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+P8.
+
+(implies (natlistp x)
+         (and (implies (endp x)
+                       (equal (sum (rev x)) (sum x)))
+              (implies (and (natp a)
+                            (equal (sum (rev x)) (sum x)))
+                       (equal (sum (rev (cons a x))) (sum (cons a x))))))
+
+You can assume that a natlist is a list, that reversing a natlist results
+in a natlist, and that consing a nat onto a natlist results in a natlist.
+
+You can also assume that the following is a theorem:
+
+(TH1) (implies (and (natlistp l1) (natlistp l2))
+               (equal (sum (app l1 l2)) (+ (sum l1) (sum l2))))
+
+
+...
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+P9.
+
+(implies (and (natp n)
+              (> n 0)
+              (equal (len (list-of-t (- n 1)))
+                     (- n 1)))
+         (equal (len (list-of-t n)) n))
+
+...
+
+|#
+
+#|
+The ... is the what you fill for contract completion. See
+the lecture notes if you need a reminder of what contract
+completion is. Contract completion should not include any
+unnecessary terms. Contracts should be the least strict but 
+the resulting formula should still be a theorem.
+
+
+P10. Change the following function MAKING THE FEWEST CHANGES NECESSARY so that 
+it gets accepted by ACl2s in LOGIC MODE:
+
+ALSO: without knowing what the function is meant to do, it's difficult to tell what the function
+ should do.
+
+(defunc fix-me (n)
+  :input-contract (integerp n)
+  :output-contract (integerp (fix-me n))
+  (cond ((equal n 0) 0)
+        ((< n 0) (+ (fix-me (- n 1)) 5))
+        (t (fix-me (- n 1)))))
+|#

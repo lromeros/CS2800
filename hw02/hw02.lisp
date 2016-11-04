@@ -625,8 +625,7 @@ did in CS 1800. You will also set the precision of a rational number
 ;; otherwise numbers like 1/3 wouldn't work.  *min-lsp* stands
 ;; for minimum least significant position and effectively means
 ;; we can store up to 6 positions smaller than the decimal point.
-(defconst *min-lsp* -6)#|ACL2s-ToDo-Line|#
-
+(defconst *min-lsp* -6)
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Define
